@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Транспорт Петербурга</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/topojson.v1.min.js"></script>
+    <script src="https://unpkg.com/simple-statistics@7.1.0/dist/simple-statistics.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <svg id="atlas"></svg>
+    <div id="tooltip">
+        <h2 id="tt-type"></h2>
+        <h4 id="tt-name"></h4>
+        <div id="tt-info">
+            <svg id="tt-pie"></svg>
+            <h2>ОСТАНОВОК</h2>
+            <h5 id="tt-stops">2456</h5>
+            <h2>МАРШРУТОВ</h2>
+            <h5 id="tt-routes">117</h5>
+        </div>
+    </div>
+    <div id="inspector">
+        <h1 id="path-name">Россия</h1>
+        <h1 id="name">Санкт-Петербург</h1>
+        <ul id="filter">
+            <li class="t-type bus">Автобус</li
+            ><li class="t-type tram">Трамвай</li
+            ><li class="t-type trol">Троллейбус</li>
+        </ul>
+        <div id="i-wrapper">
+            <svg id="i-pie"></svg>
+            <div id="i-count">
+                <h3 class="bus">0</h3>
+                <h3 class="tram">0</h3>
+                <h3 class="trol">0</h3>
+            </div>
+            <div class="i-block">
+                <h2>ОСТАНОВОК</h2>
+                <h5 id="i-stops">0</h5>
+            </div>
+            <div class="i-block">
+                <h2>МАРШРУТОВ</h2>
+                <h5 id="i-routes">0</h5>
+            </div>
+            <div class="i-block">
+                <h2>ПЛОТНОСТЬ</h2>
+                <h5 id="i-density">0 ост/км&#178</h5>
+            </div>
+        </div>
+        <div id="tf-wrapper">
+            <h2>МАРШРУТОВ НА ОСТАНОВКЕ</h2>
+            <h5 id="tf-value">1&#8804</h5>
+            <input id="tf-slider" type="range" min="1" max="5" value="1">
+        </div>
+        <div id="hg-wrapper">
+            <h2>РАСПРЕДЕЛЕНИЕ ОСТАНОВОК</h2>
+            <svg id="hg-chart"></svg>
+        </div>
+        <div id="ch-wrapper">
+            <h2>ТОНИРОВАТЬ РЕГИОНЫ</h2>
+            <div class="ch-toggle">По количеству</div>
+            <div class="ch-toggle">По плотности</div>
+            <svg id="ch-scale"></svg>
+        </div>
+    </div>
+</body>
+<link rel="stylesheet" href="styles/reset.css">
+<link rel="stylesheet" href="styles/app.css">
+<script src="scripts/map.js"></script>
+<script src="scripts/inspector.js"></script>
+<script src="scripts/helpers.js"></script>
+</html>
