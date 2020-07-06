@@ -224,13 +224,14 @@ function lockOn(obj) {
     }
 }
 document.onkeyup = function(e) {
-    if ((e.key=='Escape'||e.key=='Esc') && tree.length > 2)
-        lockOn(tree[tree.length - 2]);
+    if ((e.key=='Escape'||e.key=='Esc'))
+        if(tree.length > 2)
+            lockOn(tree[tree.length - 2]);
+        else if(tree.length == 2) reset();
 };
 function reset(){
    while(tree.length > 1)
        lockOn(tree[tree.length-2]);
-    if (d3.event.defaultPrevented) d3.event.stopPropagation();
     svg.transition().duration(600).call(
         atlasZoom.transform,
         d3.zoomIdentity,

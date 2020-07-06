@@ -4,6 +4,7 @@ let tType = d3.selectAll(".t-type")
         .on("click", filterClicked);
 
 function filterClicked(){
+    d3.event.stopPropagation();
     let button = d3.select(this),
         current = button.classed("bus") ? 0 :
             (button.classed("tram") ? 1 : 2),
@@ -23,7 +24,6 @@ function filterClicked(){
                 .attr("display", "block");
             d3.selectAll(".t-type")
                 .classed("dim", false);
-            console.log(d3.selectAll(".t-type"));
             mask = [true, true, true];
         }
         else {
@@ -275,7 +275,13 @@ function updateInspector(obj) {
     d3.select("#name")
         .text(tree.last().name);
     d3.select("#path-name")
-        .text(tree.length === 1 ? "Россия" : tree[tree.length-2].name);
+        .text(tree.length === 1 ? "Россия" : tree[tree.length-2].name)
+        .on("click", pathClicked);
+    function pathClicked(){
+        if(tree.length > 2)
+            lockOn(tree[tree.length - 2]);
+        else if(tree.length === 2) reset();
+    }
     if(obj.otype !== 3) {
         let iPieData = d3.entries(getData(obj).stopsByQuantity);
         iPie.selectAll("path")
@@ -345,7 +351,6 @@ function updateInspector(obj) {
         series[1].push([base, base = base + hgData[1][i].length]);
         series[2].push([base, base + hgData[2][i].length]);
     }
-    console.log(series);
     let x = d3.scaleLinear()
         .domain([0, hgBins])
         .range([hgMargin.left, hgWidth-hgMargin.right]);
@@ -390,17 +395,17 @@ function updateInspector(obj) {
             .tickSize(-hgWidth))
         .call(g => g.select(".domain").remove())
         .call(g => g.selectAll(".tick:not(:first-of-type) line")
-            .attr("stroke-width", "0.1vh")
+            .attr("stroke-width", "1")
             .attr("opacity", 0.2))
         .call(g => g.select(".tick:first-of-type text")
             .text(null));
     hgChart.append("g")
         .attr("class", "hg-axis x")
-        .attr("stroke-width", "0.1vh")
+        .attr("stroke-width", "1")
         .call(xAxis);
     hgChart.append("g")
         .attr("class", "hg-axis")
-        .attr("stroke-width", "0.1vh")
+        .attr("stroke-width", "1")
         .call(yAxis);
     //Histogram legend
     let hgLegend = hgChart.append("g");
@@ -410,7 +415,7 @@ function updateInspector(obj) {
         .attr("dy", -2)
         .attr("text-anchor", "end")
         .attr("fill", "#586366")
-        .style("font-size", "1vh")
+        .style("font-size", "1rem")
         .style("font-weight", "700")
         .text("РАССТОЯНИЕ МЕЖДУ ОСТАНОВКАМИ (КМ) →");
     hgLegend
@@ -421,7 +426,7 @@ function updateInspector(obj) {
         .attr("text-anchor", "start")
         .attr("fill", "white")
         .attr("class", "hg-legend-data")
-        .style("font-size", "1vh")
+        .style("font-size", "1rem")
         .style("font-weight", "700");
     let hgLegendItem = hgChart.append("g")
         .selectAll(".hg-select")
@@ -446,8 +451,8 @@ function updateInspector(obj) {
             .text("")
             .call(text => text.append("tspan").text(series[2][i][1]+"\xa0\xa0/"))
             .call(text => text.append("tspan").attr("fill", "#48F648").text("\xa0\xa0"+(series[0][i][1]-series[0][i][0])))
-            .call(text => text.append("tspan").attr("fill", "#ff3533").text("\xa0\xa0"+(series[1][i][1]-series[1][i][0])))
-            .call(text => text.append("tspan").attr("fill", "#2190ff").text("\xa0\xa0"+(series[2][i][1]-series[2][i][0])))
+            .call(text => text.append("tspan").attr("fill", "#f23030").text("\xa0\xa0"+(series[1][i][1]-series[1][i][0])))
+            .call(text => text.append("tspan").attr("fill", "#1f89f2").text("\xa0\xa0"+(series[2][i][1]-series[2][i][0])))
     }
     function hgLegendOut(){
         hgLegendItem.attr("opacity", "0");
@@ -486,7 +491,7 @@ function stopsDisplay(level){
 //Choropleth
 let chToggle = d3.selectAll(".ch-toggle").on("click", showChoropleth);
 let chLegend = d3.select("#ch-scale")
-    .attr("viewBox", [0, 0, 314, 55])
+    .attr("viewBox", [0, 0, 314, 52])
     .attr("preserveAspectRatio", "xLeftYMid meet");
 let currentSet, chMean,
     chActive = false;
@@ -523,7 +528,7 @@ function showChoropleth(update){
         let thresholds = ss.ckmeans(dataList, 9).map(v => v.pop());
         console.log(thresholds);
         let denScheme = ["#CCFBF1","#93f5e9","#6AECEC","#3CD2E2","#10AED6","#097CAF","#045186","#012D5C","#00112F"],
-            quantScheme = ["#d9fac8","#b7f5b0","#79f7ae","#62fbbe","#35FFD2","#24CCB1","#17998C","#0C6663","#053333"];
+            quantScheme = ["#e1fae1","#c4f5c4","#79f7ae","#62fbbe","#35FFD2","#24CCB1","#17998C","#0C6663","#053333"];
         let color = d3.scaleThreshold()
                 .domain(thresholds)
                 .range(type ? denScheme : quantScheme);
@@ -570,18 +575,18 @@ function showChoropleth(update){
             .attr("x", 0)
             .attr("y", 36)
             .style("text-anchor", "middle")
-            .style("font-size", "0.7vh")
+            .style("font-size", "0.6rem")
             .style("font-weight", "700")
             .style("fill", "white")
             .text(function(d, i) { return chLegendText[i]; });
         chLegend.append("text")
             .attr("class", "ch-legend-item")
             .attr("x", 314)
-            .attr("y", 55)
+            .attr("y", 52)
             .attr("dy", -2)
             .attr("text-anchor", "end")
             .attr("fill", "#586366")
-            .style("font-size", "0.56vh")
+            .style("font-size", "0.58rem")
             .style("font-weight", "700")
             .text(type ? "ОСТАНОВОК/КМ² →" : "КОЛИЧЕСТВО ОСТАНОВОК В РЕГИОНЕ →");
         areas.selectAll(".cregion")
@@ -592,8 +597,12 @@ function showChoropleth(update){
             .attr("class", "cregion")
             .attr("stroke", "white")
             .attr("fill", d => color(type ?
-                d.stopsPerArea.bus + d.stopsPerArea.tram + d.stopsPerArea.trol :
-                d.stopsByQuantity.bus + d.stopsByQuantity.tram + d.stopsByQuantity.trol)
+                ((mask[0] ? d.stopsPerArea.bus : 0) +
+                    (mask[1] ? d.stopsPerArea.tram : 0) +
+                    (mask[2] ? d.stopsPerArea.trol : 0)) :
+                ((mask[0] ? d.stopsByQuantity.bus : 0) +
+                    (mask[1] ? d.stopsByQuantity.tram : 0) +
+                    (mask[2] ? d.stopsByQuantity.trol : 0)))
             )
             .on("mouseover", tooltipOver)
             .on("mousemove", tooltipMove)
