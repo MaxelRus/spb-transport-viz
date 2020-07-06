@@ -7,13 +7,13 @@ h2 {
   font-weight: 700;
   color: #10AED6;
   letter-spacing: 0.2vh;
-  font-size: 0.8vh;
+  font-size: 1vh;
 }
 
 h5 {
   font-family: "Source Sans Pro", sans-serif;
   color: white;
-  font-size: 1.7vh;
+  font-size: 2vh;
   font-weight: bold;
   text-align: left;
   flex-grow: 1;
@@ -22,52 +22,51 @@ h5 {
 #inspector {
   position: fixed;
   width: 30vmax;
+  max-width: 40vh;
   height: 80%;
   top: 50%;
-  right: 5vmax;
+  right: 8vmax;
   transform: translateY(-50%);
   padding: 3vmin;
   z-index: 1;
   background-color: #0c1012;
   border-radius: 3vmin;
-  box-shadow: 0 0 15vmin -3vmin black;
+  box-shadow: 0 0 18vmin -4vmin black;
   font-family: "Source Sans Pro", sans-serif;
 }
 
 #path-name {
-  font-size: 2vh;
+  font-size: 2.5vh;
   color: #586366;
   font-weight: 600;
 }
 
 #name {
   margin-top: 0.5vh;
-  font-size: 3vh;
+  font-size: 3.8vh;
   color: white;
   font-weight: bold;
 }
 
 #filter {
   width: 100%;
-  max-width: 40vh;
   display: flex;
   justify-content: space-between;
   margin-top: 1.8vh;
 }
 
 .t-type {
-  font-size: 1.2vh;
+  font-size: 1.6vh;
   padding: 0.5vh 0.8vmax;
-  margin-left: 0.6vh;
+  margin-left: 0.7vh;
   flex: 1;
   color: white;
-  border-radius: 0.3vh;
+  border-radius: 0.4vh;
   cursor: pointer;
   font-weight: 400;
   transition: background 0.1s, border-left 0.1s, color 0.1s;
   user-select: none;
   -moz-user-select: none;
-  -khtml-user-select: none;
   -webkit-user-select: none;
   -o-user-select: none;
 }
@@ -84,7 +83,6 @@ h5 {
 
 #i-wrapper {
   width: 100%;
-  max-width: 30vh;
   height: 12vh;
   margin-top: 1.8vh;
   display: flex;
@@ -97,8 +95,8 @@ h5 {
 
 #i-wrapper h5 {
   color: white;
-  font-size: 1.7vh !important;
-  margin-top: 0.2vh;
+  font-size: 2.2vh !important;
+  margin-top: 0.3vh;
 }
 
 #i-pie {
@@ -121,20 +119,20 @@ h5 {
   padding: 0.2vh 0.5vh;
   border-left-width: 0.5vh;
   margin: 0.3vh 0;
-  font-size: 1vh;
+  font-size: 1.3vh;
   font-weight: 400;
   transition: border 0.3s, color 0.15s;
 }
 
 .i-block {
   flex: 0 0 28%;
+  margin-left: 1.8vh;
 }
 
 #tf-wrapper {
   width: 100%;
-  max-width: 40vh;
   height: 3.6vh;
-  margin-top: 1vh;
+  margin-top: 1.8vh;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -152,7 +150,7 @@ h5 {
 
 #tf-slider {
   order: 3;
-  flex: 0 0 85%;
+  flex: 0 0 88%;
   -webkit-appearance: none;
   appearance: none;
   height: 0.5vh;
@@ -183,16 +181,18 @@ h5 {
 }
 
 #hg-chart {
-  margin-top: 0.8vh;
-  height: 16vh;
+  margin-top: 1vh;
   width: 100%;
-  background: #2e3336;
+}
+
+.hg-axis {
+  font-size: 0.8vh;
+  font-weight: 600;
+  color: white;
 }
 
 #ch-wrapper {
   width: 100%;
-  max-width: 40vh;
-  height: 18vw;
   margin-top: 1.4vh;
   display: flex;
   flex-wrap: wrap;
@@ -212,7 +212,7 @@ h5 {
   border-radius: 0.3vh;
   color: white;
   cursor: pointer;
-  font-size: 1.2vh;
+  font-size: 1.6vh;
   font-weight: 400;
   transition: background 0.1s;
 }
@@ -223,6 +223,7 @@ h5 {
 
 .ch-toggle.active {
   background: #10AED6;
+  font-weight: bold;
 }
 
 .ch-toggle:first-of-type {
@@ -328,16 +329,16 @@ h5 {
 
 #tooltip h5 {
   color: #0c1012;
-  font-size: 1.4vh;
+  font-size: 1.6vh;
 }
 
 #tooltip h2 {
-  font-size: 0.6vh !important;
+  font-size: 0.7vh !important;
   letter-spacing: 0.1vh;
 }
 
 #tt-name {
-  font-size: 1vh;
+  font-size: 1.2vh;
   color: #111415;
   font-weight: bold;
   margin-top: 0.3vh;

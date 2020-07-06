@@ -17,10 +17,20 @@ function filterClicked(){
         stops.attr("display", "block");
     }
     else{
-        button.classed("dim", true);
-        count.classList.add("dim");
-        mask[current ] = false;
-        stops.attr("display", "none");
+        mask[current] = false;
+        if(mask.reduce((a, b) => a || b) === false){
+            d3.selectAll(".bus,.tram,.trol")
+                .attr("display", "block");
+            d3.selectAll(".t-type")
+                .classed("dim", false);
+            console.log(d3.selectAll(".t-type"));
+            mask = [true, true, true];
+        }
+        else {
+            button.classed("dim", true);
+            count.classList.add("dim");
+            stops.attr("display", "none");
+        }
     }
     updateInspector(tree.last());
     if (chActive) showChoropleth(true);
@@ -159,6 +169,7 @@ function tooltipOver(obj){
             .text(obj.otype === 1 ? "РАЙОН" :
                 (obj.otype === 2 ? "ОКРУГ" : "ОСТАНОВКА"));
         d3.select("#tt-info")
+            .style("display", "flex")
             .selectAll("h2")
             .nodes()[0]
             .innerText = type ? "ПЛОТНОСТЬ" : "ОСТАНОВОК";
@@ -250,6 +261,12 @@ let iPie = d3.select("#i-pie")
     iArc = d3.arc()
         .innerRadius(30)
         .outerRadius(50);
+let hgWidth = 560,
+    hgHeight = 380,
+    hgMargin = {top: 20, right: 20, bottom: 50, left: 45};
+let hgChart = d3.select("#hg-chart")
+    .attr("viewBox", [0, 0, hgWidth, hgHeight])
+    .attr("preserveAspectRatio", "xLeftYMid meet");
 function updateInspector(obj) {
     let data = getData(obj);
     d3.select("#name")
@@ -300,20 +317,105 @@ function updateInspector(obj) {
         })
 
     //Histogram
-    let hgChart = d3.select("#hg-chart")
-            .attr("viewBox", [0, 0, 560, 320])
-            .attr("preserveAspectRatio", "xLeftYMid meet"),
-        margin = {top: 10, right: 30, bottom: 30, left: 40},
-        hgWidth = 560-margin.right-margin.left,
-        hgHeight = 320-margin.bottom-margin.top;
-    let maxDistance = d3.max([...data.stopsByDistance.bus, ...data.stopsByDistance.tram, ...data.stopsByDistance.trol]);
-    let x = d3.scaleLinear()
-        .domain([0, maxDistance])
-        .range([0, width]);
+    let hgExtents = [0, Math.ceil(d3.max([
+        ...data.stopsByDistance.bus,
+        ...data.stopsByDistance.tram,
+        ...data.stopsByDistance.trol])*10)/10
+    ];
+    let real = hgExtents[1] < 2;
+    let hgBins = real ? hgExtents[1] * 8 : 16;
+    let thresholds = d3.range(0, real ? hgExtents[1] : 2, (real ? hgExtents[1] : 2)/hgBins);
+    if (!real) thresholds.push("2");
     let histogram = d3.histogram()
-        .value()
-        .domain(x.domain())
-        .thresholds(x.ticks(30));
+        .domain(hgExtents)
+        .thresholds(thresholds);
+    let series = [[],[],[]];
+    let hgData = [
+        histogram(data.stopsByDistance.bus),
+        histogram(data.stopsByDistance.tram),
+        histogram(data.stopsByDistance.trol)
+    ];
+    hgBins = real ? hgExtents[1] * 8 : 17;
+    for(let i=0; i<hgBins; i++){
+        let base = hgData[0][i].length;
+        series[0].push([0, base]);
+        series[1].push([base, base = base + hgData[1][i].length]);
+        series[2].push([base, base + hgData[2][i].length]);
+    }
+    let x = d3.scaleLinear()
+        .domain([0, hgBins])
+        .range([hgMargin.left, hgWidth-hgMargin.right]);
+    let y = d3.scaleLinear()
+        .domain([0, d3.max(series, d => d3.max(d, d => d[1]))])
+        .range([hgHeight - hgMargin.bottom, hgMargin.top]);
+    let binWidth = 0.95 * (x(1)-x(0));
+    //Histogram zoom
+    // let extent = [[hgMargin.left, hgMargin.top], [hgWidth-hgMargin.right, hgHeight - hgMargin.top]];
+    // const hgZoom = d3.zoom()
+    //     .scaleExtent([1, Math.max(hgExtents[1]/1.5, 1)])
+    //     .translateExtent(extent)
+    //     .extent(extent)
+    //     .on("zoom", chartZoomed);
+
+    //Histogram append
+    hgChart.selectAll("g")
+        .data(series)
+        .join("g")
+        .attr("class", (d, i) => i === 0 ? "bus" : (i === 1 ? "tram" : "trol"))
+        .selectAll("rect")
+            .data(d => d)
+            .join("rect")
+            .transition().duration(150)
+            .attr("x", (d, i) => x(i))
+            .attr("y", d => y(d[1]))
+            .attr("height", d => y(d[0])-y(d[1]))
+            .attr("width", binWidth);
+    //thresholds.shift();
+    thresholds.push(hgExtents[1]);
+    let xAxis = g => g
+        .attr("transform", `translate(0,${hgHeight - hgMargin.bottom})`)
+        .call(d3.axisBottom(x)
+            .tickFormat(d => Math.round(d/8*100)/100))
+        .call(g => g.select(".domain").remove())
+        .call(g => g.select(".tick:last-of-type text")
+            .text(real ? hgExtents[1] : "2<"));
+    let yAxis = g => g
+        .attr("transform", `translate(${hgMargin.left},0)`)
+        .call(d3.axisLeft(y)
+            .ticks(5)
+            .tickSize(-hgWidth))
+        .call(g => g.select(".domain").remove())
+        .call(g => g.selectAll(".tick:not(:first-of-type) line")
+            .attr("stroke-width", "0.1vh")
+            .attr("opacity", 0.2))
+        .call(g => g.select(".tick:first-of-type text")
+            .text(null));
+    hgChart.append("g")
+        .attr("class", "hg-axis x")
+        .attr("stroke-width", "0.1vh")
+        .call(xAxis);
+    hgChart.append("g")
+        .attr("class", "hg-axis")
+        .attr("stroke-width", "0.1vh")
+        .call(yAxis);
+    let hgLegend = hgChart.append("g");
+    hgLegend.append("text")
+        .attr("x", hgWidth)
+        .attr("y", hgHeight)
+        .attr("dy", -2)
+        .attr("text-anchor", "end")
+        .attr("fill", "white")
+        .style("font-size", "1vh")
+        .style("font-weight", "700")
+        .text("РАССТОЯНИЕ МЕЖДУ ОСТАНОВКАМИ (КМ) →");
+
+    // hgChart.call(hgZoom);
+    // function chartZoomed() {
+    //     x.range([hgMargin.left, hgWidth - hgMargin.right].map(d => d3.event.transform.applyX(d)));
+    //     binWidth = 0.9 * (x(1)-x(0));
+    //     hgChart.selectAll("rect").attr("x", (d, i) => x(i%hgBins)).attr("width", binWidth);
+    //     hgChart.selectAll(".hg-axis.x").call(xAxis);
+    // }
 }
 //Display level
 let tfSlider = document.getElementById("tf-slider"),
@@ -338,9 +440,9 @@ function stopsDisplay(level){
 }
 
 //Choropleth
-let toggle = d3.selectAll(".ch-toggle").on("click", showChoropleth);
+let chToggle = d3.selectAll(".ch-toggle").on("click", showChoropleth);
 let chLegend = d3.select("#ch-scale")
-    .attr("viewBox", [0, 0, 314, 40])
+    .attr("viewBox", [0, 0, 314, 55])
     .attr("preserveAspectRatio", "xLeftYMid meet");
 let currentSet, chMean,
     chActive = false;
@@ -351,14 +453,16 @@ function showChoropleth(update){
         chActive = false;
         stopsDisplay(tfSlider.value);
         areas.selectAll(".cregion").remove();
-        toggle.classed("active", false);
-        if(tree.last().otype - tree.length === 1) tree.pop();
+        chToggle.classed("active", false);
+        d3.selectAll(".ch-legend-item").remove();
+        reset();
     }
     else{
         d3.selectAll(".circles").attr("display", "none");
         areas.selectAll(".cregion").remove();
-        toggle.classed("active", false);
+        chToggle.classed("active", false);
         currentSet.classed("active", true);
+        reset();
         chActive = true;
         let type = currentSet.text() === "По плотности";
         let regionList = [],
@@ -373,8 +477,9 @@ function showChoropleth(update){
         }
         chMean = d3.mean(dataList);
         let thresholds = ss.ckmeans(dataList, 9).map(v => v.pop());
-        let denScheme = ["#CCFBF1","#9AF5EB","#6AECEC","#3CD2E2","#10AED6","#097CAF","#045186","#012D5C","#00112F"],
-            quantScheme = ["#DBFBDD","#B5F9C6","#8CF9BB","#62FBBE","#35FFD2","#24CCB1","#17998C","#0C6663","#053333"];
+        console.log(thresholds);
+        let denScheme = ["#CCFBF1","#93f5e9","#6AECEC","#3CD2E2","#10AED6","#097CAF","#045186","#012D5C","#00112F"],
+            quantScheme = ["#d9fac8","#adf5a6","#79f7ae","#62fbbe","#35FFD2","#24CCB1","#17998C","#0C6663","#053333"];
         let color = d3.scaleThreshold()
                 .domain(thresholds)
                 .range(type ? denScheme : quantScheme);
@@ -396,25 +501,35 @@ function showChoropleth(update){
             .attr("x", 0)
             .attr("y", 36)
             .style("text-anchor", "middle")
-            .style("font-size", "0.8vh")
-            .style("font-weight", "700")
+            .style("font-size", "0.7vh")
+            .style("font-weight", "600")
             .style("fill", "white")
             .text(function(d, i) { return chLegendText[i]; });
+        chLegend.append("text")
+            .attr("class", "ch-legend-item")
+            .attr("x", 314)
+            .attr("y", 55)
+            .attr("dy", -2)
+            .attr("text-anchor", "end")
+            .attr("fill", "white")
+            .style("font-size", "0.56vh")
+            .style("font-weight", "700")
+            .text(type ? "ОСТАНОВОК/КМ² →" : "КОЛИЧЕСТВО ОСТАНОВОК В РЕГИОНЕ →");
         areas.selectAll(".cregion")
             .data(regionList)
             .join("path")
             .attr( "d", path )
             .raise()
             .attr("class", "cregion")
-            .attr("stroke", "#10AED6")
+            .attr("stroke", "white")
             .attr("fill", d => color(type ?
-                (mask[0] ? d.stopsPerArea.bus : 0 +
-                mask[1] ? d.stopsPerArea.tram : 0 +
-                mask[2] ? d.stopsPerArea.trol : 0)
-                : (mask[0] ? d.stopsByQuantity.bus : 0 +
-                mask[1] ? d.stopsByQuantity.tram : 0 +
-                mask[2] ? d.stopsByQuantity.trol : 0)))
-            .on("click", lockOn)
+                (mask[0] ? d.stopsPerArea.bus : 0) +
+                (mask[1] ? d.stopsPerArea.tram : 0) +
+                (mask[2] ? d.stopsPerArea.trol : 0) :
+                (mask[0] ? d.stopsByQuantity.bus : 0) +
+                (mask[1] ? d.stopsByQuantity.tram : 0) +
+                (mask[2] ? d.stopsByQuantity.trol : 0))
+            )
             .on("mouseover", tooltipOver)
             .on("mousemove", tooltipMove)
             .on("mouseout", tooltipOut);

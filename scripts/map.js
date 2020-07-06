@@ -145,7 +145,7 @@ Promise.all([d3.json("data/topo_reg.json"), d3.json("data/topo.json"), d3.csv("d
         atlas.districts.push(currentDistrict);
     }
     console.log(atlas);
-    svg.call(zoom);
+    svg.call(atlasZoom);
     areas.selectAll(".district")
         .data(atlas.districts)
         .join("path")
@@ -166,13 +166,14 @@ let tree = [atlas];
 function lockOn(obj) {
     let current = tree.last();
     //Handle svg
-    if (this === svg.node()){
+    if (this === svg.node() || obj === atlas){
         if(current !== atlas)
             if(current.otype === 1){
                 areas.selectAll(".region").remove();
                 tree.pop();
                 current = tree.last();
                 atlasStyle(current);
+                updateInspector(current);
             }
             else if (tree.length !== 2) {
                 let prev = tree.pop();
@@ -183,7 +184,6 @@ function lockOn(obj) {
                 return current;
             }
         reset();
-        updateInspector(current);
         return current;
     }
     if(current.otype > 1 && obj.otype < 2 || current === obj) {
@@ -204,8 +204,8 @@ function lockOn(obj) {
             tree.pop();
         }
         if(!chActive) atlasStyle(obj, current);
-        tree.push(obj);
         areaZoomed(obj);
+        tree.push(obj);
         if(obj.otype === 1){
             areas.selectAll(".region")
                 .data(obj.regions)
@@ -226,10 +226,11 @@ document.onkeyup = function(e) {
         lockOn(tree[tree.length - 2]);
 };
 function reset(){
-    tree = [atlas];
+   while(tree.length > 1)
+       lockOn(tree[tree.length-2]);
     if (d3.event.defaultPrevented) d3.event.stopPropagation();
     svg.transition().duration(600).call(
-        zoom.transform,
+        atlasZoom.transform,
         d3.zoomIdentity,
         d3.zoomTransform(svg.node()).invert([width / 3.5, height / 2])
     );
@@ -276,7 +277,7 @@ function atlasStyle(obj, prev){
 }
 
 //Zoom handlers
-const zoom = d3.zoom()
+const atlasZoom = d3.zoom()
     .scaleExtent([1, 20])
     .translateExtent([[0, 0], [width, height]])
     .on("zoom", updateZoom);
@@ -289,7 +290,7 @@ function areaZoomed(d) {
     let [[x0, y0], [x1, y1]] = path.bounds(d);
     if(d3.event !== null) d3.event.stopPropagation();
     svg.transition().duration(500).call(
-        zoom.transform,
+        atlasZoom.transform,
         d3.zoomIdentity
             .translate(width/3.5, height/2)
             .scale(Math.min(20, 0.5 / Math.max((x1-x0)/width, (y1-y0)/height)))
