@@ -54,6 +54,7 @@
     left: 2vmax;
     display: flex;
     align-items: center;
+    z-index: 2;
 }
 #header h2{
     font-family: 'Source Sans Pro', sans-serif;

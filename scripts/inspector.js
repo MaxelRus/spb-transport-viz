@@ -268,16 +268,6 @@ let hgWidth = 560,
 let hgChart = d3.select("#hg-chart")
     .attr("viewBox", [0, 0, hgWidth, hgHeight])
     .attr("preserveAspectRatio", "xLeftYMid meet");
-let hgLegend = hgChart.append("g");
-hgLegend.append("text")
-    .attr("x", hgWidth)
-    .attr("y", hgHeight)
-    .attr("dy", -2)
-    .attr("text-anchor", "end")
-    .attr("fill", "#586366")
-    .style("font-size", "1vh")
-    .style("font-weight", "700")
-    .text("РАССТОЯНИЕ МЕЖДУ ОСТАНОВКАМИ (КМ) →");
 
 //Update inspector
 function updateInspector(obj) {
@@ -412,6 +402,17 @@ function updateInspector(obj) {
         .attr("class", "hg-axis")
         .attr("stroke-width", "0.1vh")
         .call(yAxis);
+    //Histogram legend
+    let hgLegend = hgChart.append("g");
+    hgLegend.append("text")
+        .attr("x", hgWidth)
+        .attr("y", hgHeight)
+        .attr("dy", -2)
+        .attr("text-anchor", "end")
+        .attr("fill", "#586366")
+        .style("font-size", "1vh")
+        .style("font-weight", "700")
+        .text("РАССТОЯНИЕ МЕЖДУ ОСТАНОВКАМИ (КМ) →");
     hgLegend
         .append("text")
         .attr("x", 0)
