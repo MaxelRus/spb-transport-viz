@@ -9,6 +9,8 @@ $inspector-light: #586366;
 html{
     background: $background;
     overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 h2 {
     font-weight: 700;
@@ -24,7 +26,6 @@ h5{
     text-align: left;
     flex-grow: 1;
 }
-
 #inspector{
     position: fixed;
     width: 30vmax;
@@ -180,6 +181,9 @@ h5{
     font-weight: 600;
     color: white;
 }
+.hg-legend-item{
+    cursor: help;
+}
 #ch-wrapper{
     width: 100%;
     margin-top: 1.4vh;
@@ -218,11 +222,12 @@ h5{
     flex: 0 0 100%;
 }
 .ch-legend-item{
-  font-size: 1vh;
+    font-size: 1vh;
+    cursor: help;
 }
-
-
-
+.cregion{
+    transition: fill .1s;
+}
 
 #atlas {
     position: fixed;
@@ -254,15 +259,15 @@ h5{
 .circles{
     pointer-events : none;
 }
-.tram{
-    fill: #ff3533;
-    border-left: solid #ff3533 1vh;
-    background: #691b1b;
-}
 .bus{
     fill: #48F648;
     border-left: solid #48F648 1vh;
     background: #1e681e;
+}
+.tram{
+    fill: #ff3533;
+    border-left: solid #ff3533 1vh;
+    background: #691b1b;
 }
 .trol{
     fill: #2190ff;

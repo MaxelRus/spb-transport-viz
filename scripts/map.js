@@ -7,7 +7,7 @@ Array.prototype.last = function (){
 
 var svg = d3.select("#atlas")
     .attr("viewBox", [0, 0, width, height])
-    .attr("preserveAspectRatio", "xLeftYMid meet")
+    .attr("preserveAspectRatio", "meet")
     .on("click", lockOn);
 
 let wrapper = svg.append("g");
@@ -157,6 +157,8 @@ Promise.all([d3.json("data/topo_reg.json"), d3.json("data/topo.json"), d3.csv("d
         .on("mousemove", tooltipMove)
         .on("mouseout", tooltipOut);
     updateInspector(atlas);
+    d3.select("#inspector-load").remove();
+    d3.selectAll(".hidden").classed("hidden", false);
 }).catch((errorMessage) => {
     console.log(errorMessage);
 });

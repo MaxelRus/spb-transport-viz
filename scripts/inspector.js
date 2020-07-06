@@ -193,6 +193,8 @@ function tooltipOver(obj){
                 + data.stopsByQuantity.tram
                 + data.stopsByQuantity.trol);
         d3.select("#tt-routes").text(((current/avg-1)*100).toFixed(1)+"%");
+        d3.selectAll(".cregion")
+            .filter(d => d)
     }
     else {
         if(tree.last().otype > obj.otype) {
@@ -253,8 +255,7 @@ function tooltipOut(obj){
         .classed("hover", false);
 }
 
-//Inspector
-let inspector = d3.select("#inspector");
+//Inspector declaration
 let iPie = d3.select("#i-pie")
         .attr("viewBox", [-50, -50, 100, 100])
         .attr("preserveAspectRatio", "xLeftYMid meet"),
@@ -267,6 +268,18 @@ let hgWidth = 560,
 let hgChart = d3.select("#hg-chart")
     .attr("viewBox", [0, 0, hgWidth, hgHeight])
     .attr("preserveAspectRatio", "xLeftYMid meet");
+let hgLegend = hgChart.append("g");
+hgLegend.append("text")
+    .attr("x", hgWidth)
+    .attr("y", hgHeight)
+    .attr("dy", -2)
+    .attr("text-anchor", "end")
+    .attr("fill", "#586366")
+    .style("font-size", "1vh")
+    .style("font-weight", "700")
+    .text("РАССТОЯНИЕ МЕЖДУ ОСТАНОВКАМИ (КМ) →");
+
+//Update inspector
 function updateInspector(obj) {
     let data = getData(obj);
     d3.select("#name")
@@ -296,7 +309,7 @@ function updateInspector(obj) {
                 + data.stopsByQuantity.tram
                 + data.stopsByQuantity.trol);
             return function(t) {return this.innerHTML = i(t).toFixed(0)};
-        })
+        });
     d3.select("#i-routes")
         .transition()
         .duration(150)
@@ -305,7 +318,7 @@ function updateInspector(obj) {
                 + data.routes.tram.length
                 + data.routes.trol.length);
             return function(t) {return this.innerHTML = i(t).toFixed(0)};
-        })
+        });
     d3.select("#i-density")
         .transition()
         .duration(150)
@@ -314,7 +327,7 @@ function updateInspector(obj) {
                 + data.stopsPerArea.tram
                 + data.stopsPerArea.trol);
             return function(t) {return this.innerHTML = i(t).toFixed(3)+ " ост/км²"};
-        })
+        });
 
     //Histogram
     let hgExtents = [0, Math.ceil(d3.max([
@@ -342,6 +355,7 @@ function updateInspector(obj) {
         series[1].push([base, base = base + hgData[1][i].length]);
         series[2].push([base, base + hgData[2][i].length]);
     }
+    console.log(series);
     let x = d3.scaleLinear()
         .domain([0, hgBins])
         .range([hgMargin.left, hgWidth-hgMargin.right]);
@@ -398,17 +412,46 @@ function updateInspector(obj) {
         .attr("class", "hg-axis")
         .attr("stroke-width", "0.1vh")
         .call(yAxis);
-    let hgLegend = hgChart.append("g");
-    hgLegend.append("text")
-        .attr("x", hgWidth)
+    hgLegend
+        .append("text")
+        .attr("x", 0)
         .attr("y", hgHeight)
         .attr("dy", -2)
-        .attr("text-anchor", "end")
+        .attr("text-anchor", "start")
         .attr("fill", "white")
+        .attr("class", "hg-legend-data")
         .style("font-size", "1vh")
-        .style("font-weight", "700")
-        .text("РАССТОЯНИЕ МЕЖДУ ОСТАНОВКАМИ (КМ) →");
-
+        .style("font-weight", "700");
+    let hgLegendItem = hgChart.append("g")
+        .selectAll(".hg-select")
+        .data(series[0])
+        .join("g")
+        .attr("class","hg-legend-item")
+        .attr("opacity", "0")
+        .attr("transform", function(d, i) {return "translate("+x(i)+",0)"})
+        .on("mouseover", hgLegendOver)
+        .on("mouseout", hgLegendOut);
+    hgLegendItem.append("rect")
+        .attr("x", 0)
+        .attr("y", hgMargin.top)
+        .attr("height", hgHeight-hgMargin.bottom-hgMargin.top)
+        .attr("width", x(1)-x(0))
+        .attr("fill", "#2e3336")
+        .attr("opacity", ".5");
+    function hgLegendOver(d, i){
+        hgLegendItem.attr("opacity", "0");
+        d3.select(this).attr("opacity", 1);
+        hgLegend.select(".hg-legend-data")
+            .text("")
+            .call(text => text.append("tspan").text(series[2][i][1]+"\xa0\xa0/"))
+            .call(text => text.append("tspan").attr("fill", "#48F648").text("\xa0\xa0"+(series[0][i][1]-series[0][i][0])))
+            .call(text => text.append("tspan").attr("fill", "#ff3533").text("\xa0\xa0"+(series[1][i][1]-series[1][i][0])))
+            .call(text => text.append("tspan").attr("fill", "#2190ff").text("\xa0\xa0"+(series[2][i][1]-series[2][i][0])))
+    }
+    function hgLegendOut(){
+        hgLegendItem.attr("opacity", "0");
+        hgLegend.select(".hg-legend-data").text("");
+    }
     // hgChart.call(hgZoom);
     // function chartZoomed() {
     //     x.range([hgMargin.left, hgWidth - hgMargin.right].map(d => d3.event.transform.applyX(d)));
@@ -479,7 +522,7 @@ function showChoropleth(update){
         let thresholds = ss.ckmeans(dataList, 9).map(v => v.pop());
         console.log(thresholds);
         let denScheme = ["#CCFBF1","#93f5e9","#6AECEC","#3CD2E2","#10AED6","#097CAF","#045186","#012D5C","#00112F"],
-            quantScheme = ["#d9fac8","#adf5a6","#79f7ae","#62fbbe","#35FFD2","#24CCB1","#17998C","#0C6663","#053333"];
+            quantScheme = ["#d9fac8","#b7f5b0","#79f7ae","#62fbbe","#35FFD2","#24CCB1","#17998C","#0C6663","#053333"];
         let color = d3.scaleThreshold()
                 .domain(thresholds)
                 .range(type ? denScheme : quantScheme);
@@ -490,10 +533,35 @@ function showChoropleth(update){
             .data(thresholds)
             .join("g")
             .attr("class","ch-legend-item")
-            .attr("transform", function(d, i) {return "translate("+i*35+",0)";});
+            .attr("transform", function(d, i) {return "translate("+i*35+",0)"})
+            .on("mouseover", chLegendOver)
+            .on("mouseout", chLegendOut);
+        function chLegendOver(obj){
+            let colorMask = d3.select(this).select("rect").attr("fill");
+            d3.selectAll(".ch-legend-item").selectAll("rect")
+                .attr("stroke", "none");
+            d3.select(this).select("rect")
+                .attr("stroke", "white")
+                .attr("stroke-width", 2);
+            d3.selectAll(".cregion")
+                .classed("dim", false)
+                .filter(function(d){
+                    console.log();
+                    return color(type ?
+                        d.stopsPerArea.bus + d.stopsPerArea.tram + d.stopsPerArea.trol :
+                        d.stopsByQuantity.bus + d.stopsByQuantity.tram + d.stopsByQuantity.trol) !== colorMask;
+                })
+                .classed("dim", true);
+        }
+        function chLegendOut(){
+            d3.selectAll(".cregion")
+                .classed("dim", false);
+            d3.selectAll(".ch-legend-item").selectAll("rect")
+                .attr("stroke", "none");
+        }
         chLegendItem.append("rect")
             .attr("x", 0)
-            .attr("y", 0)
+            .attr("y", 2)
             .attr("width", 34)
             .attr("height", 20)
             .attr("fill", function(d, i) {return type? denScheme[i] : quantScheme[i]});
@@ -502,7 +570,7 @@ function showChoropleth(update){
             .attr("y", 36)
             .style("text-anchor", "middle")
             .style("font-size", "0.7vh")
-            .style("font-weight", "600")
+            .style("font-weight", "700")
             .style("fill", "white")
             .text(function(d, i) { return chLegendText[i]; });
         chLegend.append("text")
@@ -511,7 +579,7 @@ function showChoropleth(update){
             .attr("y", 55)
             .attr("dy", -2)
             .attr("text-anchor", "end")
-            .attr("fill", "white")
+            .attr("fill", "#586366")
             .style("font-size", "0.56vh")
             .style("font-weight", "700")
             .text(type ? "ОСТАНОВОК/КМ² →" : "КОЛИЧЕСТВО ОСТАНОВОК В РЕГИОНЕ →");
@@ -523,16 +591,11 @@ function showChoropleth(update){
             .attr("class", "cregion")
             .attr("stroke", "white")
             .attr("fill", d => color(type ?
-                (mask[0] ? d.stopsPerArea.bus : 0) +
-                (mask[1] ? d.stopsPerArea.tram : 0) +
-                (mask[2] ? d.stopsPerArea.trol : 0) :
-                (mask[0] ? d.stopsByQuantity.bus : 0) +
-                (mask[1] ? d.stopsByQuantity.tram : 0) +
-                (mask[2] ? d.stopsByQuantity.trol : 0))
+                d.stopsPerArea.bus + d.stopsPerArea.tram + d.stopsPerArea.trol :
+                d.stopsByQuantity.bus + d.stopsByQuantity.tram + d.stopsByQuantity.trol)
             )
             .on("mouseover", tooltipOver)
             .on("mousemove", tooltipMove)
             .on("mouseout", tooltipOut);
     }
 }
-

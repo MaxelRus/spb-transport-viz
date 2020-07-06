@@ -7,9 +7,19 @@
     <script src="https://d3js.org/topojson.v1.min.js"></script>
     <script src="https://unpkg.com/simple-statistics@7.1.0/dist/simple-statistics.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/reset.css">
+    <link rel="stylesheet" href="styles/load.css">
 </head>
 <body>
-    <svg id="atlas"></svg>
+    <div id="inspector-load">
+        <div class="load-ring"></div>
+        <h1>Загрузка</h1>
+    </div>
+    <div id="header">
+        <img id="logo" src="styles/logo.svg">
+        <h2>ТРАНСПОРТ</h2>
+    </div>
+    <svg id="atlas" class="hidden"></svg>
     <div id="tooltip">
         <h2 id="tt-type"></h2>
         <h4 id="tt-name"></h4>
@@ -21,7 +31,7 @@
             <h5 id="tt-routes">117</h5>
         </div>
     </div>
-    <div id="inspector">
+    <div id="inspector" class="hidden">
         <h1 id="path-name">Россия</h1>
         <h1 id="name">Санкт-Петербург</h1>
         <ul id="filter">
@@ -66,7 +76,6 @@
         </div>
     </div>
 </body>
-<link rel="stylesheet" href="styles/reset.css">
 <link rel="stylesheet" href="styles/app.css">
 <script src="scripts/map.js"></script>
 <script src="scripts/inspector.js"></script>

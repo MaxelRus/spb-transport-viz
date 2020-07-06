@@ -1,6 +1,8 @@
 html {
   background: #0c1012;
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h2 {
@@ -191,6 +193,10 @@ h5 {
   color: white;
 }
 
+.hg-legend-item {
+  cursor: help;
+}
+
 #ch-wrapper {
   width: 100%;
   margin-top: 1.4vh;
@@ -236,6 +242,11 @@ h5 {
 
 .ch-legend-item {
   font-size: 1vh;
+  cursor: help;
+}
+
+.cregion {
+  transition: fill 0.1s;
 }
 
 #atlas {
@@ -275,16 +286,16 @@ h5 {
   pointer-events: none;
 }
 
-.tram {
-  fill: #ff3533;
-  border-left: solid #ff3533 1vh;
-  background: #691b1b;
-}
-
 .bus {
   fill: #48F648;
   border-left: solid #48F648 1vh;
   background: #1e681e;
+}
+
+.tram {
+  fill: #ff3533;
+  border-left: solid #ff3533 1vh;
+  background: #691b1b;
 }
 
 .trol {
